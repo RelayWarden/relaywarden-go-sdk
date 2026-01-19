@@ -1,0 +1,8 @@
+*.test
+*.exe
+*.dll
+*.so
+*.dylib
+coverage.out
+coverage.html
+node_modules/
