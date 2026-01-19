@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  release:
+    types: [created]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.release.tag_name }}
+          fetch-depth: 0
+      - name: Extract version from release tag
+        id: version
+        run: |
+          # Remove 'v' prefix if present (e.g., v1.2.3 -> 1.2.3)
+          TAG_NAME="${{ github.event.release.tag_name }}"
+          VERSION=${TAG_NAME#v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Release tag: $TAG_NAME"
+          echo "Release version: $VERSION"
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.23'
+      - name: Verify Go installation
+        run: |
+          go version
+          go env
+      - name: Run tests
+        run: go test ./...
+      - name: Build
+        run: |
+          # Go modules are published automatically via goproxy
+          # Build artifacts can be attached to release if needed
+          echo "Go module is available via goproxy at: github.com/relaywarden/go-sdk"
+          echo "Release version: ${{ steps.version.outputs.version }}"
